@@ -1,11 +1,13 @@
-# macOS Ubuntu
+# scripts for xhyve
 
-Install an Ubuntu 16.04 VM on macOS using [xhyve].
+Install an Ubuntu 16.04 or Arch Linux VM on macOS using [xhyve].
 
-## Download ubuntu
+## Download guest
 
-16.04.1 server work for author and
-16.04.5 works for me
+* Ubuntu 16.05 is known to work
+* Arch Linux 201905 is known to work
+  * https://wiki.archlinux.org/index.php/QEMU#Preparing_an_(Arch)_Linux_guest
+  * `mkinitcpio -p linux`
 
 ## Install xhyve
 
@@ -16,13 +18,15 @@ brew install xhyve
 ## Get booting kernel
 
 ```
-sudo ./prepare.sh ~/Downloads/ubuntu-16.04.5-server-amd64.iso
+sudo ./prepare.sh ubuntu-16.04.5-server-amd64.iso
 ```
 
 ## Create storage and boot to ISO
 
+Passing paths with spaces may fail here. Better if you copy the iso into this directory first.
+
 ```
-sudo ./create.sh ~/Downloads/ubuntu-16.04.5-server-amd64.iso
+sudo ./create.sh ubuntu-16.04.5-server-amd64.iso
 ```
 
 After booting, install Ubuntu just like you normally would.
@@ -61,29 +65,28 @@ In the guest, run this.
 ```
 cd /target/boot
 cat initrd.img-4.4.0-131-generic | nc -l -p 1234
-# run the host command and make sure the ip addres is right 
+# now run the below `nc ...` command on the host
 cat vmlinuz-4.4.0-131-generic | nc -l -p 1234
-# run the host command and make sure the ip addres is right 
-ls -al
-# check the size is correct
+# run the next `nc ...` on the host
 ```
 
 On the host, run this.
 
 ```
 cd boot/
+# after running `cat ...` on the guest:
 nc 192.168.64.8 1234 > initrd.img-4.4.0-131-generic
+# and again for the next file:
 nc 192.168.64.8 1234 > vmlinuz-4.4.0-131-generic
-ls -al
-# check the size is correct
-cd ../
 ```
+
+after copying the files, run `ls -la` on both guest and host to ensure the file sizes are exactly the same.
 
 Now, you can `exit` the shell and finish the installation.
 
-## Modify the start.sh
+## Modify the environment.sh
 
-If the file change e.g. under 16.04.1 it is 4.4.0.31 but 16.04.5, you have modify the start.sh to say it is now 4.4.0.131
+Update environment.sh to ensure the filenames in `boot/` match.
 
 ## Start your new OS
 
@@ -125,8 +128,8 @@ jaime@mac:~$ sudo ./start.sh
 
 ## Launch Daemons
 
-The purpose is unclear.  But I think it may be because the author want to boot the ubuntu when MacOS reboot.  
-Not sure it is what you want and hence if you are not sure, there is no need.  
+The purpose is unclear.  But I think it may be because the author want to boot the ubuntu when MacOS reboot.
+Not sure it is what you want and hence if you are not sure, there is no need.
 And if you need it, you have to modify the file variadico.xhyve.ubuntu.plist as it contains the directory where the file belong
 
 ```
@@ -140,6 +143,5 @@ sudo launchctl list | grep "xhyve"
 # Stop
 sudo launchctl unload /Library/LaunchDaemons/variadico.xhyve.ubuntu.plist
 ```
-
 
 [xhyve]: https://github.com/mist64/xhyve

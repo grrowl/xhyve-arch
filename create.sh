@@ -13,6 +13,7 @@ if [ "$(whoami)" != "root" ]; then
     exit 1
 fi
 
+archlabel=$(hdiutil imageinfo "$1" 2>/dev/null | grep 'partition-name:' | cut -d' ' -f2 | head -1)
 storagegb=16
 memgb=2
 cpus=1
@@ -34,4 +35,4 @@ xhyve \
     -s 4,virtio-blk,storage.img \
     -s 31,lpc \
     -l com1,stdio \
-    -f "kexec,boot/vmlinuz,boot/initrd.gz,earlyprintk=serial console=ttyS0"
+    -f "kexec,boot/vmlinuz,boot/archiso.img,earlyprintk=serial console=ttyS0 archisobasedir=arch archisolabel=$archlabel"
